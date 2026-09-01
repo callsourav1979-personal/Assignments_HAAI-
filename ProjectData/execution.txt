@@ -1,0 +1,109 @@
+CV SORTING USING LARGE LANGUAGE MODELS
+EXECUTION INSTRUCTIONS
+
+1. PREREQUISITES
+
+Python 3.10 or above is recommended.
+
+Install the required Python libraries using:
+
+pip install -r requirements.txt
+
+
+2. PROJECT STRUCTURE
+
+The project should have the following structure:
+
+project_folder/
+?
+??? main.py
+??? requirements.txt
+??? execution.txt
+??? JD_*.pdf
+??? CV_*.pdf or CV_*.docx
+
+
+3. INPUT FILE NAMING CONVENTION
+
+Job Description files must start with:
+
+JD_
+
+Example:
+
+JD_AI_Engineer.pdf
+
+
+Candidate CV files must start with:
+
+CV_
+
+Examples:
+
+CV_Candidate1.pdf
+CV_Candidate2.docx
+
+
+4. RUNNING THE APPLICATION
+
+Execute the application using:
+
+python main.py <jd_folder> <cv_folder> <output_folder>
+
+Example:
+
+python main.py . . .
+
+
+5. PROCESSING WORKFLOW
+
+The application performs the following steps:
+
+1. Reads the Job Description and candidate CV files.
+2. Extracts text from PDF or DOCX documents.
+3. Loads LLM1 - Qwen2.5-1.5B-Instruct.
+4. Converts the Job Description and CVs into structured JSON.
+5. Releases LLM1 memory.
+6. Loads LLM2 - Qwen2.5-3B-Instruct.
+7. Performs semantic professional experience evaluation.
+8. Calculates skill, experience and education scores.
+9. Calculates the overall candidate score.
+10. Ranks candidates.
+11. Generates CSV and JSON output files.
+
+
+6. OUTPUT
+
+The application generates the following output files in the specified output folder:
+
+- Candidate ranking results in CSV format
+- Candidate ranking results in JSON format
+
+The output includes candidate information, matching scores,
+recommendations and evaluation reasoning.
+
+
+7. HARDWARE
+
+The application can run on CPU or CUDA-enabled GPU.
+
+GPU execution is recommended for faster model inference.
+
+The two LLMs are loaded sequentially to reduce memory consumption.
+LLM1 memory is released before loading LLM2.
+
+
+8. MODELS USED
+
+LLM1:
+Qwen/Qwen2.5-1.5B-Instruct
+
+Purpose:
+Converts unstructured Job Description and CV text into structured JSON.
+
+LLM2:
+Qwen/Qwen2.5-3B-Instruct
+
+Purpose:
+Performs semantic evaluation of candidate professional experience
+against the Job Description.

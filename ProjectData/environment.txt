@@ -1,0 +1,11 @@
+# Install Python dependencies
+
+pip install pypdf python-docx
+pip install pytesseract pdf2image
+pip install transformers torch accelerate
+pip install pandas
+
+# Install system dependencies
+
+apt-get update
+apt-get install -y tesseract-ocr poppler-utils
