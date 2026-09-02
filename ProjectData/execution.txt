@@ -1,26 +1,36 @@
 CV SORTING USING LARGE LANGUAGE MODELS
 EXECUTION INSTRUCTIONS
 
+
 1. PREREQUISITES
 
 Python 3.10 or above is recommended.
 
-Install the required Python libraries using:
+The application can run on CPU or a CUDA-enabled GPU.
+GPU execution is recommended for faster LLM inference.
 
-pip install -r requirements.txt
+Install the required environment dependencies using:
+
+bash environment.txt
+
+For Google Colab, run:
+
+!bash environment.txt
 
 
 2. PROJECT STRUCTURE
 
-The project should have the following structure:
+The project files should be placed in the same directory:
 
 project_folder/
-?
-??? main.py
-??? requirements.txt
-??? execution.txt
-??? JD_*.pdf
-??? CV_*.pdf or CV_*.docx
+|
+|-- main.py
+|-- requirements.txt
+|-- environment.txt
+|-- execution.txt
+|-- JD_*.pdf or JD_*.docx
+|-- CV_*.pdf or CV_*.docx
+|-- output CSV/JSON files
 
 
 3. INPUT FILE NAMING CONVENTION
@@ -29,9 +39,10 @@ Job Description files must start with:
 
 JD_
 
-Example:
+Examples:
 
 JD_AI_Engineer.pdf
+JD_SpecialEducator.docx
 
 
 Candidate CV files must start with:
@@ -46,13 +57,18 @@ CV_Candidate2.docx
 
 4. RUNNING THE APPLICATION
 
-Execute the application using:
+The application accepts three directory parameters:
 
 python main.py <jd_folder> <cv_folder> <output_folder>
 
-Example:
+When all input and output files are maintained in the same project
+directory, use "." for all three parameters:
 
 python main.py . . .
+
+For Google Colab, if main.py is located at the root directory:
+
+!python /main.py . . .
 
 
 5. PROCESSING WORKFLOW
@@ -60,37 +76,40 @@ python main.py . . .
 The application performs the following steps:
 
 1. Reads the Job Description and candidate CV files.
-2. Extracts text from PDF or DOCX documents.
+2. Extracts text from PDF and DOCX documents.
 3. Loads LLM1 - Qwen2.5-1.5B-Instruct.
-4. Converts the Job Description and CVs into structured JSON.
-5. Releases LLM1 memory.
-6. Loads LLM2 - Qwen2.5-3B-Instruct.
-7. Performs semantic professional experience evaluation.
-8. Calculates skill, experience and education scores.
+4. Converts the unstructured JD and CV content into structured JSON.
+5. Performs skill and education matching.
+6. Releases LLM1 resources to reduce memory usage.
+7. Loads LLM2 - Qwen2.5-3B-Instruct.
+8. Performs semantic evaluation of professional experience.
 9. Calculates the overall candidate score.
-10. Ranks candidates.
-11. Generates CSV and JSON output files.
+10. Ranks the candidates.
+11. Generates the final results in CSV and JSON formats.
 
 
 6. OUTPUT
 
-The application generates the following output files in the specified output folder:
+The application generates candidate ranking results in:
 
-- Candidate ranking results in CSV format
-- Candidate ranking results in JSON format
+- CSV format
+- JSON format
 
-The output includes candidate information, matching scores,
-recommendations and evaluation reasoning.
+The results include candidate information, skill matching score,
+experience matching score, education matching score, overall score,
+recommendation and experience reasoning.
 
 
-7. HARDWARE
+7. HARDWARE AND MEMORY MANAGEMENT
 
-The application can run on CPU or CUDA-enabled GPU.
+The application supports both CPU and CUDA-enabled GPU execution.
 
 GPU execution is recommended for faster model inference.
 
-The two LLMs are loaded sequentially to reduce memory consumption.
-LLM1 memory is released before loading LLM2.
+The two LLMs are loaded sequentially rather than simultaneously
+to reduce GPU memory consumption.
+
+LLM1 is released from memory before LLM2 is loaded.
 
 
 8. MODELS USED
@@ -98,12 +117,23 @@ LLM1 memory is released before loading LLM2.
 LLM1:
 Qwen/Qwen2.5-1.5B-Instruct
 
-Purpose:
-Converts unstructured Job Description and CV text into structured JSON.
+Role:
+Structured information extraction from unstructured Job Description
+and CV documents.
 
 LLM2:
 Qwen/Qwen2.5-3B-Instruct
 
-Purpose:
-Performs semantic evaluation of candidate professional experience
-against the Job Description.
+Role:
+Semantic evaluation of candidate professional experience against
+the requirements of the Job Description.
+
+
+9. NOTES
+
+- At least one Job Description file starting with "JD_" must be
+  present in the input directory.
+- Candidate CV files must start with "CV_".
+- Supported document formats are PDF and DOCX.
+- The same directory can be supplied for JD, CV and output locations
+  by using "." for all three parameters.

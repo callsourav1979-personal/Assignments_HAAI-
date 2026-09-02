@@ -570,7 +570,7 @@ Returns:
 
   # Generate deterministic LLM response
   with torch.no_grad():
-    outputs = model1.generate(**inputs,max_new_tokens=500,do_sample=False)
+    outputs = model1.generate(**inputs,max_new_tokens=2000,do_sample=False)
 
   # Decode only the newly generated tokens
   jd_response = tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:],skip_special_tokens=True)
@@ -580,19 +580,19 @@ Returns:
 
 def convert_cv_to_json(cv_text):
   """
-Converts unstructured CV text into structured JSON format using an LLM.
+  Converts unstructured CV text into structured JSON format using an LLM.
 
-The function extracts candidate information including professional title,
-skills, work experience, education, responsibilities, projects, and work
-activities explicitly mentioned in the CV.
+  The function extracts candidate information including professional title,
+  skills, work experience, education, responsibilities, projects, and work
+  activities explicitly mentioned in the CV.
 
-Parameters:
-    cv_text (str): Extracted raw text from a candidate CV document.
+  Parameters:
+      cv_text (str): Extracted raw text from a candidate CV document.
 
-Returns:
-    dict: Structured JSON containing candidate name, job title, skills,
-          experience, education, and responsibilities.
-"""
+  Returns:
+      dict: Structured JSON containing candidate name, job title, skills,
+            experience, education, and responsibilities.
+  """
 
   cv_prompt = """
 You are an expert recruitment assistant.
@@ -655,9 +655,6 @@ IMPORTANT RULES:
 
 5. Do NOT infer skills based on the candidate's job title.
 
-   For example, do not assume an AI Engineer knows Python unless Python
-   is explicitly mentioned in the CV.
-
 6. "experience" must contain explicitly stated work experience details.
 
 7. "education" must contain explicitly stated educational qualifications,
@@ -701,7 +698,7 @@ OUTPUT LIMITS:
 - Do not copy entire paragraphs from the CV.
 - Extract only information required by the JSON schema.
 """
-    # Create system and user messages for the LLM
+
   messages = [
         {
             "role": "system",
@@ -711,24 +708,50 @@ OUTPUT LIMITS:
             "role": "user",
             "content": cv_prompt
         }
-    ]
+  ]
 
-  # Convert messages into the model-specific chat format
-  text = tokenizer.apply_chat_template(messages,tokenize=False, add_generation_prompt=True)
+  text = tokenizer.apply_chat_template(
+      messages,
+      tokenize=False,
+      add_generation_prompt=True
+  )
 
-  # Convert text into model input tensors
-  # and move tensors to the configured device
-  inputs = tokenizer(text,return_tensors="pt").to(device)
+  inputs = tokenizer(
+      text,
+      return_tensors="pt"
+  ).to(device)
 
-  # Generate deterministic LLM response
-  with torch.no_grad():
-        outputs = model1.generate(**inputs,max_new_tokens=2000,do_sample=False)
+  # Try progressively larger output limits only when necessary
+  for max_tokens in [2000, 3000, 4000]:
 
-  # Decode only the newly generated tokens
-  cv_response = tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:],skip_special_tokens=True)
+      print(f"Generating CV JSON with max_new_tokens={max_tokens}")
 
-  # Clean and validate the generated JSON response
-  return clean_and_validate_json(cv_response)
+      with torch.no_grad():
+          outputs = model1.generate(
+              **inputs,
+              max_new_tokens=max_tokens,
+              do_sample=False
+          )
+
+      cv_response = tokenizer.decode(
+          outputs[0][inputs["input_ids"].shape[1]:],
+          skip_special_tokens=True
+      )
+
+      try:
+          return clean_and_validate_json(cv_response)
+
+      except json.JSONDecodeError as e:
+
+          print(
+              f"JSON parsing failed with max_new_tokens={max_tokens}: {e}"
+          )
+
+          if max_tokens < 4000:
+              print("Retrying with a larger token limit...")
+          else:
+              print("CV could not be converted into valid JSON.")
+              raise
 
 def llm_match_candidate(jd, cv):
   """
